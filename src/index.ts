@@ -1,5 +1,6 @@
 import { client, player } from './client.js';
 import { DefaultExtractors } from '@discord-player/extractor';
+import { YoutubeiExtractor } from 'discord-player-youtubei';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -17,6 +18,11 @@ const __dirname = path.dirname(__filename);
 
 // Load default extractors
 await player.extractors.loadMulti(DefaultExtractors);
+await player.extractors.register(YoutubeiExtractor, {
+    streamOptions: {
+        useClient: "ANDROID",
+    }
+});
 
 // Import player events
 await import('./events/playerEvents.js');
