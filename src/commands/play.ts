@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, GuildMember } from 'discord.js';
-import { useMainPlayer } from 'discord-player';
+import { useMainPlayer, QueryType } from 'discord-player';
 
 export default {
     data: new SlashCommandBuilder()
@@ -21,11 +21,16 @@ export default {
         await interaction.deferReply();
 
         try {
+            console.log(`[Play Command] Query: ${query}`);
             const res = await player.play(member.voice.channel, query, {
+                searchEngine: QueryType.YOUTUBE_SEARCH,
                 nodeOptions: {
                     metadata: interaction
                 }
             });
+
+            console.log(`[Play Command] Result found: ${res.track.title} (${res.track.url})`);
+            console.log(`[Play Command] Queue connection: ${res.queue.connection ? 'Active' : 'Inactive'}`);
 
             const embed = new EmbedBuilder()
                 .setTitle('🎶 Added to Queue')
@@ -35,7 +40,7 @@ export default {
 
             return interaction.editReply({ embeds: [embed] });
         } catch (e) {
-            console.error(e);
+            console.error('[Play Command Error]', e);
             return interaction.editReply(`No results found for **${query}**!`);
         }
     },
