@@ -3,6 +3,7 @@ import { DisTube } from 'distube';
 import { SpotifyPlugin } from '@distube/spotify';
 import { SoundCloudPlugin } from '@distube/soundcloud';
 import { YtDlpPlugin } from '@distube/yt-dlp';
+import ffmpeg from 'ffmpeg-static';
 
 export const client = new Client({
     intents: [
@@ -14,9 +15,10 @@ export const client = new Client({
 });
 
 export const distube = new DisTube(client, {
-    emitNewSongOnly: true,
-    emitAddSongWhenCreatingQueue: false,
-    emitAddListWhenCreatingQueue: false,
+    emitNewSongOnly: false,
+    ffmpeg: {
+        path: ffmpeg || undefined
+    },
     plugins: [
         new SpotifyPlugin(),
         new SoundCloudPlugin(),

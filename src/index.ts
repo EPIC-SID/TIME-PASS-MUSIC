@@ -4,10 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { Collection } from 'discord.js';
-import ffmpeg from 'ffmpeg-static';
-
-// Explicitly set FFmpeg path
-process.env.FFMPEG_PATH = ffmpeg || '';
 
 dotenv.config();
 
