@@ -27,7 +27,7 @@ export default {
             });
         } catch (e) {
             console.error('[Play Command Error]', e);
-            return interaction.editReply({ content: `❌ Error: ${e}` });
+            return interaction.editReply({ content: `❌ Error: ${e instanceof Error ? e.message : e}` });
         }
     },
 };
