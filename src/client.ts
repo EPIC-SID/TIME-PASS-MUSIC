@@ -43,7 +43,7 @@ export const distube = new DisTube(client, {
     },
     plugins: [
         new SpotifyPlugin(),
-        new SoundCloudPlugin(),
+        // new SoundCloudPlugin(), // Rate limited
         new YtDlpPlugin({
             cookies: cookies,
             httpChunkSize: 1048576,

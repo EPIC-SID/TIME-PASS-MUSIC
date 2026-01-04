@@ -5,7 +5,7 @@ export default {
         .setName('ping')
         .setDescription('Checks the bot\'s latency'),
     async execute(interaction: any) {
-        const sent = await interaction.reply({ content: 'Pinging...', fetchReply: true });
+        const sent = await interaction.deferReply({ fetchReply: true });
         const latency = sent.createdTimestamp - interaction.createdTimestamp;
         const apiPing = interaction.client.ws.ping;
 

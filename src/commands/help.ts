@@ -56,8 +56,8 @@ export default {
             .setTitle('🎹 Music Command Center')
             .setDescription('**Control the rhythm.** Use these commands to manage your listening session.')
             .addFields(
-                { name: '▶️ Playback', value: '`/play`, `/search`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/seek`, `/autoplay`, `/loop`', inline: false },
-                { name: '🎶 Queue Management', value: '`/queue`, `/remove`, `/nowplaying`, `/shuffle`', inline: false },
+                { name: '▶️ Playback', value: '`/play`, `/search`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/jump`, `/seek`, `/autoplay`, `/loop`', inline: false },
+                { name: '🎶 Queue Management', value: '`/queue`, `/remove`, `/clear`, `/nowplaying`, `/shuffle`, `/save`', inline: false },
                 { name: '🎛️ Audio Effects', value: '`/filter` (Bassboost, Nightcore, 8D, Vaporwave...)', inline: false }
             )
             .setThumbnail(client.user.displayAvatarURL())
@@ -104,7 +104,8 @@ export default {
                     .setStyle(ButtonStyle.Secondary)
             );
 
-        const reply = await interaction.reply({ embeds: [homeEmbed], components: [buttonRow], fetchReply: true });
+        const reply = await interaction.deferReply({ fetchReply: true });
+        await interaction.editReply({ embeds: [homeEmbed], components: [buttonRow] });
 
         const collector = reply.createMessageComponentCollector({
             componentType: ComponentType.Button,

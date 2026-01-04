@@ -99,15 +99,15 @@ distube
             );
         queue.textChannel?.send({ embeds: [embed] });
     })
-    .on('error', (channel: any, e: any) => {
-        if (channel && typeof channel.send === 'function') {
+    .on('error', (error: any, queue: Queue) => {
+        if (queue && queue.textChannel) {
             const embed = new EmbedBuilder()
                 .setColor('#FF0000') // Red
                 .setTitle('❌ Error')
-                .setDescription(e.toString().slice(0, 4096)); // Embed desc limit is 4096
-            channel.send({ embeds: [embed] });
+                .setDescription(error.toString().slice(0, 4096)); // Embed desc limit is 4096
+            queue.textChannel.send({ embeds: [embed] });
         }
-        console.error('[DisTube Error]', e);
+        console.error('[DisTube Error]', error);
     })
     .on('finish', (queue: Queue) => {
         client.user?.setActivity({ name: 'Music 🎶', type: 2 }); // Reset status

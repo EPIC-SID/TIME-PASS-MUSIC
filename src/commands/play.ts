@@ -21,52 +21,27 @@ export default {
             return interaction.reply({ content: '❌ Connect to a voice channel first!', ephemeral: true });
         }
 
+        // Defer reply immediately for better responsiveness
+        await interaction.deferReply();
+
         const searchEmbed = new EmbedBuilder()
             .setColor('#5865F2') // Blurple for searching
             .setDescription('**🔎 Searching YouTube...**');
-        await interaction.reply({ embeds: [searchEmbed], ephemeral: true });
+        await interaction.editReply({ embeds: [searchEmbed] });
 
         try {
+            // Check if query is a URL
             const isUrl = /^(https?:\/\/)/.test(query);
-            const isSpotifyTrack = query.includes('spotify.com/track/');
-            const isYoutubeLink = query.includes('youtube.com') || query.includes('youtu.be');
 
-            let videoTitle = 'Unknown Song';
-            let videoUrl = query;
-            let videoThumb = undefined;
-            let videoDuration = 'Unknown';
-
-            if (isSpotifyTrack) {
-                try {
-                    const response = await fetch(query);
-                    const text = await response.text();
-                    const titleMatch = text.match(/<title>(.*?)<\/title>/);
-
-                    if (titleMatch && titleMatch[1]) {
-                        let searchTerm = titleMatch[1].replace(' | Spotify', '').replace(' - song by', ' -').trim();
-                        const searchResults = await yts(searchTerm);
-                        if (searchResults && searchResults.videos.length > 0) {
-                            const video = searchResults.videos[0];
-                            query = video.url;
-                        } else {
-                            throw new Error('No YouTube match found');
-                        }
-                    }
-                } catch (err) {
-                    console.error('Spotify error:', err);
-                    const errorEmbed = new EmbedBuilder().setColor('#FF0000').setDescription('❌ Could not resolve Spotify link.');
-                    return interaction.editReply({ embeds: [errorEmbed] });
-                }
-            } else if (isYoutubeLink) {
-                // Logic preserved, but no UI updates needed
-            } else if (!isUrl) {
+            if (!isUrl) {
+                // Manually search YouTube because native Distube search can be flaky ("NO_RESULT")
                 const searchResults = await yts(query);
                 if (!searchResults || !searchResults.videos.length) {
                     const errorEmbed = new EmbedBuilder().setColor('#FF0000').setDescription('❌ No results found.');
                     return interaction.editReply({ embeds: [errorEmbed] });
                 }
-                const video = searchResults.videos[0];
-                query = video.url;
+                // Use the URL of the first result
+                query = searchResults.videos[0].url;
             }
 
             await distube.play(voiceChannel, query, {
@@ -74,7 +49,7 @@ export default {
                 textChannel: interaction.channel
             });
 
-            // Clean up the "Searching..." message
+            // Delete the "Thinking..." reply (or change it to joined, but distube events handle the messages usually)
             await interaction.deleteReply();
 
         } catch (e) {
