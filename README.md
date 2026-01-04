@@ -1,38 +1,34 @@
-# 🎵 EPIC TUNES
-
-![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
-![Discord.js](https://img.shields.io/badge/Discord.js-5865F2?style=for-the-badge&logo=discord&logoColor=white)
-![DisTube](https://img.shields.io/badge/DisTube-FE2C55?style=for-the-badge&logo=youtube&logoColor=white)
+# EPIC TUNES
 
 **EPIC TUNES** is a high-performance, feature-rich Discord music bot designed for seamless audio experiences. Built with modern web technologies, it features a professional **Interactive Dashboard**, 24/7 uptime capability, and a sleek user interface.
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-- **🎹 High-Quality Playback**:  
+- **High-Quality Playback**:  
   Supports YouTube, Spotify, and SoundCloud with optimal audio buffering.
   
-- **🎛️ Interactive Dashboard (`/help`)**:  
+- **Interactive Dashboard (`/help`)**:  
   Control everything from a single command!
-  - `🏠 Home`: Real-time status overview.
-  - `🎵 Music Center`: Dedicated controls for playback, queue, and filters.
-  - `🔰 Info System`: Bot statistics and support.
-  - `⚙️ Settings`: Configure per-server settings.
+  - `Home`: Real-time status overview.
+  - `Music Center`: Dedicated controls for playback, queue, and filters.
+  - `Info System`: Bot statistics and support.
+  - `Settings`: Configure per-server settings.
 
-- **🛠️ Advanced Audio Filters**:  
+- **Advanced Audio Filters**:  
   Apply real-time effects like `Bassboost`, `Nightcore`, `Vaporwave`, `3D`, and more.
 
-- **⚙️ Custom Configuration**:  
+- **Custom Configuration**:  
   - Dynamic Prefix (`/prefix`) persistent per server.
   - Server-specific settings manageable via `/config`.
 
-- **🚀 24/7 Ready**:  
+- **24/7 Ready**:  
   Built-in HTTP server for health checks (perfect for Render + UptimeRobot).
 
 ---
 
-## 📥 Installation
+## Installation
 
 ### Prerequisites
 - [Node.js](https://nodejs.org/) (v16.9.0 or higher)
@@ -67,9 +63,9 @@
 
 ---
 
-## 🎮 Commands
+## Commands
 
-### 🎵 Music Commands
+### Music Commands
 | Command | Description |
 |:---|:---|
 | `/play <query>` | Play a song or playlist (YouTube/Spotify/SoundCloud). |
@@ -89,7 +85,7 @@
 | `/join` | Summon the bot to your voice channel. |
 | `/leave` | Disconnect the bot. |
 
-### 🛠️ Utility & Config
+### Utility & Config
 | Command | Description |
 |:---|:---|
 | `/help` | Open the **Interactive Dashboard**. |
@@ -102,22 +98,3 @@
 | `/reset` | Reset server settings to default. |
 
 ---
-
-## ☁️ Deployment (Free 24/7)
-
-This bot is optimized for **Render**:
-1. Create a **Web Service** on Render.
-2. Set Build Command: `npm run build`
-3. Set Start Command: `npm start`
-4. Add Environment Variables (`DISCORD_TOKEN`, etc.).
-5. Use **UptimeRobot** to ping the provided Render URL every 5 minutes.
-
----
-
-## ❤️ Credits
-Developed by **Siddhant** (EPIC SID).  
-Powered by [DisTube](https://distube.js.org/).
-
----
-
-> *Run nicely, play loud!* 🎸
