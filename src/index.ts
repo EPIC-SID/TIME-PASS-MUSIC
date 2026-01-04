@@ -12,6 +12,8 @@ const __dirname = path.dirname(__filename);
 
 // Import player events (this will register DisTube event listeners)
 await import('./events/playerEvents.js');
+// Import interaction handler for buttons
+await import('./events/interactionHandler.js');
 
 // Command handler setup
 (client as any).commands = new Collection();
@@ -142,6 +144,16 @@ client.on('messageCreate', async (message) => {
         deferReply: async () => {
             (interactionShim as any).deferred = true;
             // Can send a placeholder "Thinking..." messages if desired
+            return;
+        },
+        deleteReply: async () => {
+            if ((interactionShim as any).response) {
+                try {
+                    return await (interactionShim as any).response.delete();
+                } catch (e) {
+                    console.error('Shim Delete Error:', e);
+                }
+            }
             return;
         }
     };
