@@ -1,5 +1,5 @@
 {
-  "name": "time-pass-music",
+  "name": "epic-tunes",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EPIC-SID/TIME-PASS-MUSIC.git"
+    "url": "git+https://github.com/EPIC-SID/EPIC-TUNES.git"
   },
   "keywords": [],
   "author": "",
