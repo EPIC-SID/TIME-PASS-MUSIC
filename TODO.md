@@ -20,8 +20,3 @@
 - [ ] Test with a non-YouTube direct MP3 link to confirm the core player logic is sound.
 
 ---
-
-## Admin Dashboard (Attendance App) - Pending Context
-- [ ] **Frontend:** Files are in `Admin Dashboard/`.
-- [ ] **Backend:** Need to re-implement CORS and `/get_all_student_stats` in `backend/resource_server/main.py` and `backend/auth_server/main.py`.
-- [ ] **Database:** Verify faculty admin account in Neon DB.
