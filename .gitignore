@@ -15,6 +15,7 @@ cookies.json
 config.json
 TODO.md
 
+
 # Logs
 *.log
 npm-debug.log*
