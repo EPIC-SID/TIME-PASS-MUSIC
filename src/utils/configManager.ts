@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const configPath = path.resolve('config.json');
-
 interface GuildConfig {
     prefix?: string;
 }
@@ -14,7 +12,12 @@ interface ConfigData {
 export class ConfigManager {
     private static data: ConfigData = {};
 
+    private static getConfigFile(): string {
+        return process.env.CONFIG_FILE || path.resolve('config.json');
+    }
+
     static load() {
+        const configPath = this.getConfigFile();
         if (!fs.existsSync(configPath)) {
             this.data = {};
             this.save();
@@ -24,12 +27,13 @@ export class ConfigManager {
             const raw = fs.readFileSync(configPath, 'utf-8');
             this.data = JSON.parse(raw);
         } catch (e) {
-            console.error('Failed to load config.json', e);
+            console.error(`Failed to load ${configPath}`, e);
             this.data = {};
         }
     }
 
     static save() {
+        const configPath = this.getConfigFile();
         fs.writeFileSync(configPath, JSON.stringify(this.data, null, 2));
     }
 
@@ -44,6 +48,3 @@ export class ConfigManager {
         this.save();
     }
 }
-
-// Initial load
-ConfigManager.load();

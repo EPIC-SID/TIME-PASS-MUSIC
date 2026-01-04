@@ -6,7 +6,21 @@ import { fileURLToPath } from 'url';
 import { Collection, Events } from 'discord.js';
 import http from 'http';
 
-dotenv.config();
+// -- Argument Parsing for Multi-Bot Support --
+const args = process.argv.slice(2);
+const envArg = args.find(arg => arg.startsWith('--env='));
+const configArg = args.find(arg => arg.startsWith('--config='));
+
+const envFile = envArg ? envArg.split('=')[1] : '.env';
+if (envArg) console.log(`[Startup] Custom Env File: ${envFile}`);
+
+dotenv.config({ path: envFile });
+
+if (configArg) {
+    const configFile = configArg.split('=')[1];
+    process.env.CONFIG_FILE = path.resolve(configFile);
+    console.log(`[Startup] Custom Config File: ${configFile}`);
+}
 
 // -- UPTIMEROBOT KEEP-ALIVE SYSTEM --
 const PORT = process.env.PORT || 3000;
@@ -67,7 +81,19 @@ client.on(Events.InteractionCreate, async interaction => {
 });
 
 client.once(Events.ClientReady, async () => {
-    console.log(`
+    const botName = process.env.BOT_NAME || 'EPIC TUNES';
+
+    if (botName === 'MFS MUSIC') {
+        console.log(`
+███╗   ███╗███████╗███████╗    ███╗   ███╗██╗   ██╗███████╗██╗ ██████╗ 
+████╗ ████║██╔════╝██╔════╝    ████╗ ████║██║   ██║██╔════╝██║██╔════╝ 
+██╔████╔██║█████╗  ███████╗    ██╔████╔██║██║   ██║███████╗██║██║      
+██║╚██╔╝██║██╔══╝  ╚════██║    ██║╚██╔╝██║██║   ██║╚════██║██║██║      
+██║ ╚═╝ ██║██║     ███████║    ██║ ╚═╝ ██║╚██████╔╝███████║██║╚██████╗ 
+╚═╝     ╚═╝╚═╝     ╚══════╝    ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝ 
+`);
+    } else {
+        console.log(`
 ███████╗██████╗ ██╗ ██████╗    ████████╗██╗   ██╗███╗   ██╗███████╗███████╗
 ██╔════╝██╔══██╗██║██╔════╝    ╚══██╔══╝██║   ██║████╗  ██║██╔════╝██╔════╝
 █████╗  ██████╔╝██║██║            ██║   ██║   ██║██╔██╗ ██║█████╗  ███████╗
@@ -75,7 +101,8 @@ client.once(Events.ClientReady, async () => {
 ███████╗██║     ██║╚██████╗       ██║   ╚██████╔╝██║ ╚████║███████╗███████║
 ╚══════╝╚═╝     ╚═╝ ╚═════╝       ╚═╝    ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚══════╝
 `);
-    console.log(`EPIC TUNES IS ONLINE !!`);
+    }
+    console.log(`${botName} IS ONLINE !!`);
 
     const commandData = (client as any).commands.map((c: any) => c.data.toJSON());
 
@@ -83,9 +110,17 @@ client.once(Events.ClientReady, async () => {
         console.log('Started refreshing guild (/) commands.');
 
         // Register Globally (Primary)
+        // Register Globally (Primary)
         await client.application?.commands.set(commandData);
 
         // Clear per-guild commands to prevent duplicates (Global takes precedence)
+        // ... (existing code for clearing guild commands) ...
+
+        // Set Initial Status
+        client.user?.setActivity({
+            name: 'Music 🎶',
+            type: 2 // ActivityType.Listening
+        });
         const guilds = client.guilds.cache;
         for (const [id, guild] of guilds) {
             try {
@@ -102,6 +137,7 @@ client.once(Events.ClientReady, async () => {
 });
 
 import { ConfigManager } from './utils/configManager.js';
+ConfigManager.load();
 
 // Legacy Text Command Handler (Shim)
 client.on('messageCreate', async (message) => {

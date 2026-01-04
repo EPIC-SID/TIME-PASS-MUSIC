@@ -8,11 +8,11 @@ out/
 build/
 
 # Environment Variables & Secrets
-.env
+.env*
 cookies.json
 
 # Local Configuration & Data
-config.json
+config*.json
 TODO.md
 
 

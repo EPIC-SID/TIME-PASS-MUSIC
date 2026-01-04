@@ -27,6 +27,23 @@
   Built-in HTTP server for health checks (perfect for Render + UptimeRobot).
 
 ---
+   
+## Multi-Bot Support 🤖
+
+Run multiple instances of the bot (e.g., **EPIC TUNES** and **MFS MUSIC**) from the same codebase!
+
+1.  **Create a second env file**:
+    - Copy `.env` to `.env.bot2`
+    - Update `DISCORD_TOKEN` and set `BOT_NAME="MFS MUSIC"`
+
+2.  **Run the second bot**:
+    ```bash
+    npm run dev:bot2
+    # Or manually:
+    npm run dev -- --env=.env.bot2
+    ```
+
+---
 
 ## Installation
 

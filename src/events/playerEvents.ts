@@ -1,5 +1,5 @@
 import { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder } from 'discord.js';
-import { distube as distubeClient } from '../client.js';
+import { client, distube as distubeClient } from '../client.js';
 import { Queue, Song, Playlist } from 'distube';
 
 const distube = distubeClient as any;
@@ -51,7 +51,11 @@ const createMusicComponents = (queue: Queue) => {
 
 distube
     .on('playSong', (queue: Queue, song: Song) => {
-
+        // Update Bot Status
+        client.user?.setActivity({
+            name: song.name?.substring(0, 120) || 'Music',
+            type: 2 // ActivityType.Listening
+        });
 
         // Status String for Footer
         const loopStatus = queue.repeatMode ? (queue.repeatMode === 2 ? 'Queue' : 'Song') : 'Off';
@@ -106,12 +110,14 @@ distube
         console.error('[DisTube Error]', e);
     })
     .on('finish', (queue: Queue) => {
+        client.user?.setActivity({ name: 'Music 🎶', type: 2 }); // Reset status
         const embed = new EmbedBuilder()
             .setColor('#3498DB') // Blue
             .setDescription('🏁 **Queue finished!**');
         queue.textChannel?.send({ embeds: [embed] });
     })
     .on('disconnect', (queue: Queue) => {
+        client.user?.setActivity({ name: 'Music 🎶', type: 2 }); // Reset status
         const embed = new EmbedBuilder()
             .setColor('#E74C3C') // Red
             .setDescription('🔌 **Disconnected!**');
