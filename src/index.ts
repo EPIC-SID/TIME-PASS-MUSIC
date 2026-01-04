@@ -78,11 +78,13 @@ client.on('ready', async () => {
     }
 });
 
+import { ConfigManager } from './utils/configManager.js';
+
 // Legacy Text Command Handler (Shim)
 client.on('messageCreate', async (message) => {
     if (message.author.bot || !message.guild) return;
 
-    const PREFIX = process.env.PREFIX || '?';
+    const PREFIX = ConfigManager.getPrefix(message.guildId || '');
     if (!message.content.startsWith(PREFIX)) return;
 
     const args = message.content.slice(PREFIX.length).trim().split(/ +/);

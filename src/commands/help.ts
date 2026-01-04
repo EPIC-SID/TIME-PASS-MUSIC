@@ -9,7 +9,6 @@ export default {
 
         // Stats
         const totalGuilds = client.guilds.cache.size;
-        const totalMembers = client.users.cache.size; // Approximation if cache is partial
         const uptime = process.uptime();
         const apiPing = client.ws.ping;
         const totalCommands = (client as any).commands.size;
@@ -21,21 +20,28 @@ export default {
         const seconds = Math.floor(uptime % 60);
         const uptimeString = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
-        // Base Embed Data
-        const authorName = 'Made by EPIC SID';
-        const authorUrl = 'https://discord.gg/ckHzTAM9Kj';
+        // Footer Data
         const footer = {
             text: `Requested by ${interaction.user.tag}`,
             iconURL: interaction.user.displayAvatarURL()
         };
 
-        // Page Embeds
         const homeEmbed = new EmbedBuilder()
             .setColor('#5865F2')
             .setAuthor({ name: client.user.username, iconURL: client.user.displayAvatarURL() })
             .setTitle('🔥 Ultimate Music Experience')
-            .setDescription(`**Yo, ready to drop the beat?** 🎧\nI'm **${client.user.username}**, your high-quality music companion.\nUse the interactive menu below to explore my features!`)
+            .setDescription(`**Yo, ready to drop the beat?** 🎧\nI'm **${client.user.username}**, your high-quality music companion.`)
             .addFields(
+                {
+                    name: '🎧 Music Controls',
+                    value: '`/play`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/seek`, `/autoplay`, `/loop`, `/shuffle`, `/filter`, `/nowplaying`, `/queue`',
+                    inline: false
+                },
+                {
+                    name: '🔰 Info & Utility',
+                    value: '`/ping`, `/stats`, `/uptime`, `/invite`, `/help`, `/join`, `/leave`',
+                    inline: false
+                },
                 {
                     name: '📊 System Status',
                     value: `>>> **Servers:** \`${totalGuilds}\`\n**Commands:** \`${totalCommands}\`\n**Ping:** \`${apiPing}ms\`\n**Uptime:** \`${uptimeString}\`\n\n**Made By:** [EPIC SID](https://discord.gg/ckHzTAM9Kj)`,
@@ -47,62 +53,59 @@ export default {
 
         const musicEmbed = new EmbedBuilder()
             .setColor('#E91E63')
-            .setTitle('🎧 DJ Controls')
-            .setDescription('**Take control of the vibe.**\nEverything you need to manage the queue and playback.')
+            .setTitle('🎹 Music Command Center')
+            .setDescription('**Control the rhythm.** Use these commands to manage your listening session.')
             .addFields(
                 { name: '▶️ Playback', value: '`/play`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/seek`, `/autoplay`, `/loop`', inline: false },
-                { name: '🎶 Queue Mgmt', value: '`/queue`, `/nowplaying`, `/shuffle`', inline: false },
-                { name: '🎛️ Audio FX', value: '`/filter` (Bassboost, Nightcore, 8D, Vaporwave...)', inline: false }
+                { name: '🎶 Queue Management', value: '`/queue`, `/nowplaying`, `/shuffle`', inline: false },
+                { name: '🎛️ Audio Effects', value: '`/filter` (Bassboost, Nightcore, 8D, Vaporwave...)', inline: false }
             )
-            .setFooter(footer);
-
-        const configEmbed = new EmbedBuilder()
-            .setColor('#2ECC71')
-            .setTitle('⚙️ Server Config')
-            .setDescription('**Customize your experience.**\nManage how the bot behaves in your server.')
-            .addFields(
-                { name: '🔊 Voice', value: '`/join`, `/leave`', inline: true },
-                { name: '🔧 System', value: '`/247` (Coming Soon)', inline: true }
-            )
+            .setThumbnail(client.user.displayAvatarURL())
             .setFooter(footer);
 
         const infoEmbed = new EmbedBuilder()
             .setColor('#3498DB')
-            .setTitle('ℹ️ Intel')
-            .setDescription('**Behind the scenes info.**')
+            .setTitle('🔰 Information Command Center')
+            .setDescription('**Get to know me better.** Use these commands to check my status or invite me.')
             .addFields(
-                { name: '📚 Commands', value: '`/help` - Open this menu', inline: true }
+                { name: '🛠️ Utilities', value: '`/ping` - Check latency\n`/uptime` - Check run time\n`/stats` - View system specs', inline: false },
+                { name: '💁 Support & Access', value: '`/help` - Show this menu\n`/invite` - Add me to your server', inline: false }
             )
+            .setThumbnail(client.user.displayAvatarURL())
             .setFooter(footer);
 
-        // Buttons
+        const configEmbed = new EmbedBuilder()
+            .setColor('#2ECC71')
+            .setTitle('⚙️ System Configuration')
+            .setDescription('**Customize your server experience.**')
+            .addFields(
+                { name: '🔧 General Settings', value: '`/config` - View server settings\n`/prefix` - Change bot prefix\n`/reset` - Reset to defaults', inline: false }
+            )
+            .setThumbnail(client.user.displayAvatarURL())
+            .setFooter(footer);
+
         const buttonRow = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
                     .setCustomId('home_btn')
-                    .setLabel('Home')
                     .setEmoji('🏠')
-                    .setStyle(ButtonStyle.Secondary),
-                new ButtonBuilder()
-                    .setCustomId('music_btn')
-                    .setLabel('Music')
-                    .setEmoji('🎵')
-                    .setStyle(ButtonStyle.Primary),
-                new ButtonBuilder()
-                    .setCustomId('config_btn')
-                    .setLabel('Config')
-                    .setEmoji('⚙️')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
+                    .setCustomId('music_btn')
+                    .setEmoji('🎵')
+                    .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
                     .setCustomId('info_btn')
-                    .setLabel('Info')
-                    .setEmoji('ℹ️')
+                    .setEmoji('🔰')
+                    .setStyle(ButtonStyle.Secondary),
+                new ButtonBuilder()
+                    .setCustomId('config_btn')
+                    .setEmoji('⚙️')
                     .setStyle(ButtonStyle.Secondary)
             );
 
         const reply = await interaction.reply({ embeds: [homeEmbed], components: [buttonRow], fetchReply: true });
 
-        // Collector
         const collector = reply.createMessageComponentCollector({
             componentType: ComponentType.Button,
             time: 60000
@@ -112,21 +115,19 @@ export default {
             if (i.user.id !== interaction.user.id) {
                 return i.reply({ content: '❌ You cannot control this help menu!', ephemeral: true });
             }
-
             if (i.customId === 'home_btn') {
                 await i.update({ embeds: [homeEmbed] });
             } else if (i.customId === 'music_btn') {
                 await i.update({ embeds: [musicEmbed] });
-            } else if (i.customId === 'config_btn') {
-                await i.update({ embeds: [configEmbed] });
             } else if (i.customId === 'info_btn') {
                 await i.update({ embeds: [infoEmbed] });
+            } else if (i.customId === 'config_btn') {
+                await i.update({ embeds: [configEmbed] });
             }
         });
 
         collector.on('end', () => {
-            // Disable buttons after timeout
-            const disabledRow = new ActionRowBuilder<ButtonBuilder>(); // Explicitly typed if strict, or cast
+            const disabledRow = new ActionRowBuilder<ButtonBuilder>();
             buttonRow.components.forEach((btn: any) => disabledRow.addComponents(ButtonBuilder.from(btn).setDisabled(true)));
             interaction.editReply({ components: [disabledRow] }).catch(() => { });
         });
