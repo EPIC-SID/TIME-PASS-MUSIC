@@ -9,6 +9,7 @@ build/
 
 # Environment Variables & Secrets
 .env*
+.env.bot2
 cookies.json
 
 # Local Configuration & Data
