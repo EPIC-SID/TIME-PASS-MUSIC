@@ -3,13 +3,8 @@ import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
-<<<<<<< HEAD
-import { Collection, Events } from 'discord.js'; // Added Events
-import http from 'http'; // For UptimeRobot
-=======
-import { Collection } from 'discord.js';
+import { Collection, Events } from 'discord.js';
 import http from 'http';
->>>>>>> temp
 
 dotenv.config();
 
@@ -52,7 +47,7 @@ console.log(`${commandFiles.length} Message Commands Loaded`);
 console.log(`4 Events Loaded`);
 
 // Event handler for slash commands
-client.on(Events.InteractionCreate, async interaction => { // Updated to Events.InteractionCreate
+client.on(Events.InteractionCreate, async interaction => {
     if (!interaction.isChatInputCommand()) return;
 
     const command = (client as any).commands.get(interaction.commandName);
@@ -71,11 +66,7 @@ client.on(Events.InteractionCreate, async interaction => { // Updated to Events.
     }
 });
 
-<<<<<<< HEAD
-client.once(Events.ClientReady, async () => { // Updated to Events.ClientReady and once
-    console.log(`🚀 Bot is online as ${client.user?.tag}!`);
-=======
-client.on('ready', async () => {
+client.once(Events.ClientReady, async () => {
     console.log(`
 ███████╗██████╗ ██╗ ██████╗    ███╗   ███╗██╗   ██╗███████╗██╗ ██████╗    ██╗███████╗     ██████╗ ███╗   ██╗██╗     ██╗███╗   ██╗███████╗    ██╗██╗
 ██╔════╝██╔══██╗██║██╔════╝    ████╗ ████║██║   ██║██╔════╝██║██╔════╝    ██║██╔════╝    ██╔═══██╗████╗  ██║██║     ██║████╗  ██║██╔════╝    ██║██║
@@ -85,17 +76,13 @@ client.on('ready', async () => {
 ╚══════╝╚═╝     ╚═╝ ╚═════╝    ╚═╝     ╚═╝ ╚═════╝ ╚══════╝╚═╝ ╚═════╝    ╚═╝╚══════╝     ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝╚═╝  ╚═══╝╚══════╝    ╚═╝╚═╝
                                                                                                                                                    
 `);
-    console.log(`${client.user?.username} is Online`);
->>>>>>> temp
+    console.log(`EPIC MUSIC IS ONLINE !!`);
 
     const commandData = (client as any).commands.map((c: any) => c.data.toJSON());
 
     try {
-<<<<<<< HEAD
-=======
         console.log('Started refreshing guild (/) commands.');
 
->>>>>>> temp
         // Register Globally (Primary)
         await client.application?.commands.set(commandData);
 
@@ -105,15 +92,11 @@ client.on('ready', async () => {
             try {
                 await guild.commands.set([]); // Clear guild commands
             } catch (error) {
-                // Ignore per-guild errors silently or log if critical
+                // Ignore per-guild errors via try-catch, or log
             }
         }
-<<<<<<< HEAD
-        // Silent success
-=======
 
         console.log('Successfully reloaded guild (/) commands.');
->>>>>>> temp
     } catch (error) {
         console.error(error);
     }
@@ -209,11 +192,3 @@ client.on('messageCreate', async (message) => {
 });
 
 client.login(process.env.DISCORD_TOKEN);
-
-const server = http.createServer((req, res) => {
-    res.writeHead(200);
-    res.end('Bot is active!');
-});
-server.listen(3000, () => {
-    console.log('Listening at http://localhost:3000');
-});
