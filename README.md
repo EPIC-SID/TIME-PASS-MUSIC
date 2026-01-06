@@ -91,14 +91,18 @@ Run multiple instances of the bot (e.g., **EPIC TUNES** and **MFS MUSIC**) from 
 | `/resume` | Resume playback. |
 | `/skip` | Skip to the next song. |
 | `/previous` | Go back to the previous song. |
+| `/forward <seconds>` | Fast forward the current song. |
+| `/rewind <seconds>` | Rewind the current song. |
 | `/volume <0-100>` | Adjust the volume. |
-| `/queue` | View the current song queue. |
+| `/queue` | View the song queue (Interactive Pagination). |
 | `/shuffle` | Shuffle the queue. |
 | `/loop <off/song/queue>` | Toggle loop modes. |
 | `/seek <seconds>` | Seek to a specific time. |
 | `/autoplay` | Toggle autoplay mode. |
 | `/filter <name>` | Apply audio effects (bassboost, nightcore, etc.). |
+| `/lyrics` | Fetch lyrics for the current song. |
 | `/nowplaying` | Show details of the current track. |
+| `/247` | Toggle 24/7 mode (Bot stays in voice channel). |
 | `/join` | Summon the bot to your voice channel. |
 | `/leave` | Disconnect the bot. |
 
