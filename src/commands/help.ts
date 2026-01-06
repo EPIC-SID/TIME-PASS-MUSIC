@@ -56,8 +56,8 @@ export default {
             .setTitle('🎹 Music Command Center')
             .setDescription('**Control the rhythm.** Use these commands to manage your listening session.')
             .addFields(
-                { name: '▶️ Playback', value: '`/play`, `/search`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/jump`, `/seek`, `/autoplay`, `/loop`', inline: false },
-                { name: '🎶 Queue Management', value: '`/queue`, `/remove`, `/clear`, `/nowplaying`, `/shuffle`, `/save`', inline: false },
+                { name: '▶️ Playback', value: '`/play`, `/search`, `/pause`, `/resume`, `/stop`, `/skip`, `/previous`, `/jump`, `/seek`, `/forward`, `/rewind`, `/autoplay`, `/loop`', inline: false },
+                { name: '🎶 Queue Management', value: '`/queue`, `/remove`, `/clear`, `/nowplaying`, `/shuffle`, `/save`, `/lyrics`', inline: false },
                 { name: '🎛️ Audio Effects', value: '`/filter` (Bassboost, Nightcore, 8D, Vaporwave...)', inline: false }
             )
             .setThumbnail(client.user.displayAvatarURL())
@@ -79,7 +79,7 @@ export default {
             .setTitle('⚙️ System Configuration')
             .setDescription('**Customize your server experience.**')
             .addFields(
-                { name: '🔧 General Settings', value: '`/config` - View server settings\n`/prefix` - Change bot prefix\n`/reset` - Reset to defaults', inline: false }
+                { name: '🔧 General Settings', value: '`/config` - View server settings\n`/prefix` - Change bot prefix\n`/247` - Toggle 24/7 mode\n`/reset` - Reset to defaults', inline: false }
             )
             .setThumbnail(client.user.displayAvatarURL())
             .setFooter(footer);
@@ -87,25 +87,25 @@ export default {
         const buttonRow = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
-                    .setCustomId('home_btn')
+                    .setCustomId('help_home')
                     .setEmoji('🏠')
                     .setStyle(ButtonStyle.Success),
                 new ButtonBuilder()
-                    .setCustomId('music_btn')
+                    .setCustomId('help_music')
                     .setEmoji('🎵')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId('info_btn')
+                    .setCustomId('help_info')
                     .setEmoji('🔰')
                     .setStyle(ButtonStyle.Secondary),
                 new ButtonBuilder()
-                    .setCustomId('config_btn')
+                    .setCustomId('help_config')
                     .setEmoji('⚙️')
                     .setStyle(ButtonStyle.Secondary)
             );
 
-        const reply = await interaction.deferReply({ fetchReply: true });
-        await interaction.editReply({ embeds: [homeEmbed], components: [buttonRow] });
+        await interaction.deferReply({ fetchReply: true });
+        const reply = await interaction.editReply({ embeds: [homeEmbed], components: [buttonRow] });
 
         const collector = reply.createMessageComponentCollector({
             componentType: ComponentType.Button,
@@ -116,13 +116,13 @@ export default {
             if (i.user.id !== interaction.user.id) {
                 return i.reply({ content: '❌ You cannot control this help menu!', ephemeral: true });
             }
-            if (i.customId === 'home_btn') {
+            if (i.customId === 'help_home') {
                 await i.update({ embeds: [homeEmbed] });
-            } else if (i.customId === 'music_btn') {
+            } else if (i.customId === 'help_music') {
                 await i.update({ embeds: [musicEmbed] });
-            } else if (i.customId === 'info_btn') {
+            } else if (i.customId === 'help_info') {
                 await i.update({ embeds: [infoEmbed] });
-            } else if (i.customId === 'config_btn') {
+            } else if (i.customId === 'help_config') {
                 await i.update({ embeds: [configEmbed] });
             }
         });
