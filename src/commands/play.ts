@@ -24,9 +24,13 @@ export default {
         // Defer reply immediately for better responsiveness
         await interaction.deferReply();
 
+        // Check for playlist indicators in URL
+        const isPlaylist = query.includes('list=') || query.includes('playlist') || query.includes('album');
+        const searchMsg = isPlaylist ? '**🔄 Loading Playlist... (This may take a while)**' : '**🔎 Searching...**';
+
         const searchEmbed = new EmbedBuilder()
             .setColor('#5865F2') // Blurple for searching
-            .setDescription('**🔎 Searching YouTube...**');
+            .setDescription(searchMsg);
         await interaction.editReply({ embeds: [searchEmbed] });
 
         try {
@@ -44,21 +48,41 @@ export default {
                 query = searchResults.videos[0].url;
             }
 
-            await distube.play(voiceChannel, query, {
+            // Create a timeout promise to prevent hanging
+            // Increased to 60s for large playlists
+            const playPromise = distube.play(voiceChannel, query, {
                 member: member,
                 textChannel: interaction.channel
             });
 
-            // Delete the "Thinking..." reply (or change it to joined, but distube events handle the messages usually)
-            await interaction.deleteReply();
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Request timed out. The playlist might be too large.')), 60000)
+            );
+
+            await Promise.race([playPromise, timeoutPromise]);
+
+            // If successful, delete the searching message
+            // We use deleteReply inside a try-catch to avoid errors if it's already deleted
+            try {
+                await interaction.deleteReply();
+            } catch (e) {
+                // Ignore delete errors
+            }
 
         } catch (e) {
             console.error('[Play Command Error]', e);
             const errorEmbed = new EmbedBuilder()
                 .setColor('#FF0000') // Red
                 .setTitle('❌ Error')
-                .setDescription(`${e instanceof Error ? e.message : e}`);
-            return interaction.editReply({ embeds: [errorEmbed] });
+                .setDescription(`${e instanceof Error ? e.message : String(e)}`);
+
+            // If interaction is still deferred/active, edit the reply to show error
+            try {
+                await interaction.editReply({ embeds: [errorEmbed] });
+            } catch (err) {
+                // If edit fails, try sending a new message
+                interaction.channel?.send({ embeds: [errorEmbed] }).catch(() => { });
+            }
         }
     },
 };
