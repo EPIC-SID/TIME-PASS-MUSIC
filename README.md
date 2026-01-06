@@ -28,7 +28,7 @@
 
 ---
    
-## Multi-Bot Support 🤖
+## Multi-Bot Support 
 
 Run multiple instances of the bot (e.g., **EPIC TUNES** and **MFS MUSIC**) from the same codebase!
 
