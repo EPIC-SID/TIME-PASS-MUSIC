@@ -11,14 +11,20 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     // Helper to get the queue for the guild
     const queue = distube.getQueue(interaction.guildId!);
 
-    if (!queue) {
-        return interaction.reply({ content: '❌ No music is currently playing!', ephemeral: true });
-    }
+    // For Setup buttons (Refresh/Help), we don't need a queue to be active
+    if (customId.startsWith('setup_') && !customId.startsWith('setup_play_pause')) {
+        // Let execution proceed to specific handlers below, jumping over queue checks
+    } else {
+        // Standard Music Control Checks
+        if (!queue) {
+            return interaction.reply({ content: '❌ No music is currently playing!', ephemeral: true });
+        }
 
-    // Permission check: Ensure user is in the same voice channel
-    const member = interaction.member as any;
-    if (!member.voice.channel || member.voice.channel.id !== queue.voiceChannel?.id) {
-        return interaction.reply({ content: '❌ You need to be in the same voice channel as the bot!', ephemeral: true });
+        // Permission check: Ensure user is in the same voice channel
+        const member = interaction.member as any;
+        if (!member.voice.channel || member.voice.channel.id !== queue.voiceChannel?.id) {
+            return interaction.reply({ content: '❌ You need to be in the same voice channel as the bot!', ephemeral: true });
+        }
     }
 
     try {
@@ -26,21 +32,45 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             if (customId === 'music_filter') {
                 const filter = interaction.values[0];
                 if (filter === 'off') {
-                    queue.filters.clear();
+                    queue?.filters?.clear();
                     await interaction.reply({ content: '✨ Cleared all filters.', ephemeral: true });
                 } else {
                     // Toggle the filter or set it. DisTube's filter system is odd. 
                     // Usually queue.filters.add(filter) works if defined in config.
                     // We'll assume standard DisTube filters are available.
-                    if (queue.filters.has(filter)) {
-                        queue.filters.remove(filter);
+                    if (queue?.filters?.has(filter)) {
+                        queue?.filters?.remove(filter);
                         await interaction.reply({ content: `❌ Filter/Effect Removed: **${filter}**`, ephemeral: true });
                     } else {
-                        queue.filters.add(filter);
+                        queue?.filters?.add(filter);
                         await interaction.reply({ content: `✨ Filter/Effect Applied: **${filter}**`, ephemeral: true });
                     }
                 }
             }
+            return;
+        }
+
+        // Handle Setup Idle Buttons (Refresh / Help)
+        if (customId === 'setup_refresh') {
+            await interaction.deferUpdate();
+            // Manually trigger a reset to ensure latest UI
+            await resetSetupMessage(interaction.guildId!);
+            // Ephemeral confirmation - actually deferUpdate is often enough if we edit message
+            // but here we might just want to reply confidentially
+            await interaction.followUp({ content: '🔄 Setup status refreshed!', ephemeral: true });
+            return;
+        }
+
+        if (customId === 'setup_help') {
+            await interaction.reply({
+                content: `
+### 📘 Quick Guide
+- **Play Music**: Just type the song name or link in this channel!
+- **Buttons**: Use the controls below the "Now Playing" message.
+- **Commands**: Type \`/\` to see all available commands like \`/filter\`, \`/loop\`, etc.
+                 `,
+                ephemeral: true
+            });
             return;
         }
 
@@ -65,7 +95,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
         switch (action) {
             case 'music_back':
-                if (queue.previousSongs.length > 0) {
+                if (queue && queue.previousSongs.length > 0) {
                     await queue.previous();
                     await interaction.reply({ content: '⏮️ Went back to previous song!', ephemeral: true });
                 } else {
@@ -74,7 +104,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_next':
-                if (queue.songs.length > 1) {
+                if (queue && queue.songs.length > 1) {
                     await queue.skip();
                     await interaction.reply({ content: '⏭️ Skipped song!', ephemeral: true });
                 } else {
@@ -83,27 +113,28 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_pause':
-                if (queue.paused) {
+                if (queue?.paused) {
                     queue.resume();
                     await interaction.reply({ content: '▶️ Resumed!', ephemeral: true });
                 } else {
-                    queue.pause();
+                    queue?.pause();
                     await interaction.reply({ content: '⏸️ Paused!', ephemeral: true });
                 }
                 break;
 
             case 'music_stop':
-                queue.stop();
+                queue?.stop();
                 await interaction.reply({ content: '🛑 Stopped music and cleared queue.', ephemeral: true });
                 resetSetupMessage(interaction.guildId!);
                 break;
 
             case 'music_shuffle':
-                queue.shuffle();
+                queue?.shuffle();
                 await interaction.reply({ content: '🔀 Shuffled queue!', ephemeral: true });
                 break;
 
             case 'music_loop':
+                if (!queue) return;
                 // Mode: 0 = Off, 1 = Song, 2 = Queue
                 const nextMode = (queue.repeatMode + 1) % 3;
                 queue.setRepeatMode(nextMode);
@@ -113,6 +144,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_vol_down':
+                if (!queue) return;
                 const volDown = Math.max(0, queue.volume - 10);
                 queue.setVolume(volDown);
                 await interaction.reply({ content: `🔉 Volume decrease to ${volDown}%`, ephemeral: true });
@@ -120,6 +152,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_vol_up':
+                if (!queue) return;
                 const volUp = Math.min(100, queue.volume + 10);
                 queue.setVolume(volUp);
                 await interaction.reply({ content: `🔊 Volume increased to ${volUp}%`, ephemeral: true });
@@ -134,6 +167,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_queue':
+                if (!queue) return;
                 const qDocs = queue.songs.slice(0, 10).map((s, i) => {
                     return `**${i + 1}.** [${s.name}](${s.url}) - \`${s.formattedDuration}\``;
                 }).join('\n');
@@ -150,19 +184,20 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 break;
 
             case 'music_info':
+                if (!queue) return;
                 const currentSong = queue.songs[0];
                 await interaction.reply({
                     embeds: [{
                         color: 0x3498DB, // Blue for Info
                         title: 'ℹ️ Song Info',
-                        thumbnail: { url: currentSong.thumbnail || '' },
+                        thumbnail: { url: currentSong?.thumbnail || '' },
                         fields: [
-                            { name: 'Title', value: currentSong.name || 'Unknown', inline: true },
-                            { name: 'Duration', value: currentSong.formattedDuration || 'Unknown', inline: true },
-                            { name: 'Views', value: (currentSong.views || 0).toString(), inline: true },
-                            { name: 'Likes', value: (currentSong.likes || 0).toString(), inline: true },
-                            { name: 'Uploader', value: (currentSong.uploader && typeof currentSong.uploader === 'object') ? (currentSong.uploader.name || 'Unknown') : String(currentSong.uploader || 'Unknown'), inline: true },
-                            { name: 'Source', value: currentSong.source || 'Unknown', inline: true }
+                            { name: 'Title', value: currentSong?.name || 'Unknown', inline: true },
+                            { name: 'Duration', value: currentSong?.formattedDuration || 'Unknown', inline: true },
+                            { name: 'Views', value: (currentSong?.views || 0).toString(), inline: true },
+                            { name: 'Likes', value: (currentSong?.likes || 0).toString(), inline: true },
+                            { name: 'Uploader', value: (currentSong?.uploader && typeof currentSong.uploader === 'object') ? (currentSong.uploader.name || 'Unknown') : String(currentSong?.uploader || 'Unknown'), inline: true },
+                            { name: 'Source', value: currentSong?.source || 'Unknown', inline: true }
                         ]
                     }],
                     ephemeral: true

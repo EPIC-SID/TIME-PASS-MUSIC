@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, GuildMember } from 'discord.js';
 import { ConfigManager } from '../utils/configManager.js';
-import { getSetupEmbed } from '../utils/musicUtils.js';
+import { getSetupEmbed, getSetupComponents } from '../utils/musicUtils.js';
 
 export default {
     data: new SlashCommandBuilder()
@@ -18,6 +18,10 @@ export default {
             const existingChannel = guild.channels.cache.get(existingChannelId);
             if (existingChannel) {
                 return interaction.reply({ content: `⚠️ **Music Setup already exists!** Check <#${existingChannelId}>`, ephemeral: true });
+            } else {
+                // Config exists but channel missing - reset config
+                ConfigManager.setSetupChannelId(guild.id, null);
+                ConfigManager.setSetupMessageId(guild.id, null);
             }
         }
 
@@ -44,7 +48,7 @@ export default {
             // Create the Controller Embed using shared helper
             const embed = getSetupEmbed(guild);
 
-            const message = await channel.send({ embeds: [embed], components: [] });
+            const message = await channel.send({ embeds: [embed], components: getSetupComponents() });
 
             // Save to Config
             ConfigManager.setSetupChannelId(guild.id, channel.id);

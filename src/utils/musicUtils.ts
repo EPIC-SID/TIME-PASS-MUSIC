@@ -43,6 +43,23 @@ export const createMusicComponents = (queue: Queue) => {
     return [filterRow, row1, row2];
 };
 
+export const getSetupComponents = () => {
+    const row = new ActionRowBuilder<ButtonBuilder>()
+        .addComponents(
+            new ButtonBuilder()
+                .setCustomId('setup_refresh')
+                .setLabel('Refresh Status')
+                .setEmoji('🔄')
+                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder()
+                .setCustomId('setup_help')
+                .setLabel('Help Guide')
+                .setEmoji('❓')
+                .setStyle(ButtonStyle.Success)
+        );
+    return [row];
+};
+
 export const updateSetupMessage = async (queue: Queue) => {
     const guildId = queue.textChannel?.guild.id;
     if (!guildId) return;
@@ -140,11 +157,30 @@ export const resetSetupMessage = async (guildId: string) => {
 
         const embed = getSetupEmbed(guild);
 
-        // Ensure clean state - no buttons when idle
-        await message.edit({ embeds: [embed], components: [] });
+        // Ensure clean state - with idle buttons
+        await message.edit({ embeds: [embed], components: getSetupComponents() });
 
     } catch (e) {
+        // If message not found/deleted, we should probably recreate it?
+        // For now, let's try to just log it, but "Self-Healing" would check if error is "Unknown Message"
+        // and send a new one.
         console.error('Failed to reset setup message:', e);
+
+        // Simple Self-Healing: If we can't find the message, try to send a new one in that channel
+        const channel = client.channels.cache.get(setupChannelId) as any;
+        if (channel) {
+            try {
+                const guild = client.guilds.cache.get(guildId);
+                if (guild) {
+                    const embed = getSetupEmbed(guild);
+                    const newMessage = await channel.send({ embeds: [embed], components: getSetupComponents() });
+                    ConfigManager.setSetupMessageId(guildId, newMessage.id);
+                    console.log('Self-Healed: Created new setup message.');
+                }
+            } catch (innerError) {
+                console.error('Failed to self-heal setup message:', innerError);
+            }
+        }
     }
 };
 
