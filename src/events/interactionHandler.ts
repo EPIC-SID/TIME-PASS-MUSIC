@@ -94,77 +94,134 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         }
 
         switch (action) {
+            case 'music_lyrics':
+                // Shared Lyrics Logic
+                const currentSongForLyrics = queue?.songs[0];
+                if (!currentSongForLyrics) return interaction.reply({ content: '❌ No song playing!', ephemeral: true });
+
+                await interaction.deferReply({ ephemeral: true });
+                try {
+                    const { getSongLyrics, createLyricsEmbed } = require('../utils/lyricsUtils.js');
+                    const result = await getSongLyrics(currentSongForLyrics.name);
+                    if (!result) {
+                        await interaction.editReply({ content: `❌ No lyrics found for **${currentSongForLyrics.name}**` });
+                    } else {
+                        const embed = createLyricsEmbed(result);
+                        await interaction.editReply({ embeds: [embed] });
+                    }
+                } catch (e) {
+                    await interaction.editReply({ content: '❌ Failed to fetch lyrics.' });
+                }
+                break;
+
+            // For control actions, check DJ Perms - Explicitly repeated for safety/clarity
             case 'music_back':
-                if (queue && queue.previousSongs.length > 0) {
-                    await queue.previous();
-                    await interaction.reply({ content: '⏮️ Went back to previous song!', ephemeral: true });
-                } else {
-                    await interaction.reply({ content: '❌ No previous song found.', ephemeral: true });
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (queue && queue.previousSongs.length > 0) {
+                        await queue.previous();
+                        await interaction.reply({ content: '⏮️ Went back to previous song!', ephemeral: true });
+                    } else {
+                        await interaction.reply({ content: '❌ No previous song found.', ephemeral: true });
+                    }
                 }
                 break;
 
             case 'music_next':
-                if (queue && queue.songs.length > 1) {
-                    await queue.skip();
-                    await interaction.reply({ content: '⏭️ Skipped song!', ephemeral: true });
-                } else {
-                    await interaction.reply({ content: '❌ No more songs in queue. Use Stop button to end.', ephemeral: true });
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (queue && queue.songs.length > 1) {
+                        await queue.skip();
+                        await interaction.reply({ content: '⏭️ Skipped song!', ephemeral: true });
+                    } else {
+                        await interaction.reply({ content: '❌ No more songs in queue. Use Stop button to end.', ephemeral: true });
+                    }
                 }
                 break;
 
             case 'music_pause':
-                if (queue?.paused) {
-                    queue.resume();
-                    await interaction.reply({ content: '▶️ Resumed!', ephemeral: true });
-                } else {
-                    queue?.pause();
-                    await interaction.reply({ content: '⏸️ Paused!', ephemeral: true });
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (queue?.paused) {
+                        queue.resume();
+                        await interaction.reply({ content: '▶️ Resumed!', ephemeral: true });
+                    } else {
+                        queue?.pause();
+                        await interaction.reply({ content: '⏸️ Paused!', ephemeral: true });
+                    }
                 }
                 break;
 
             case 'music_stop':
-                queue?.stop();
-                await interaction.reply({ content: '🛑 Stopped music and cleared queue.', ephemeral: true });
-                resetSetupMessage(interaction.guildId!);
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    queue?.stop();
+                    await interaction.reply({ content: '🛑 Stopped music and cleared queue.', ephemeral: true });
+                    resetSetupMessage(interaction.guildId!);
+                }
                 break;
 
             case 'music_shuffle':
-                queue?.shuffle();
-                await interaction.reply({ content: '🔀 Shuffled queue!', ephemeral: true });
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    queue?.shuffle();
+                    await interaction.reply({ content: '🔀 Shuffled queue!', ephemeral: true });
+                }
                 break;
 
             case 'music_loop':
-                if (!queue) return;
-                // Mode: 0 = Off, 1 = Song, 2 = Queue
-                const nextMode = (queue.repeatMode + 1) % 3;
-                queue.setRepeatMode(nextMode);
-                const modeName = nextMode === 0 ? 'Off' : nextMode === 1 ? 'Song' : 'Queue';
-                await interaction.reply({ content: `🔁 Loop mode set to: **${modeName}**`, ephemeral: true });
-                updateSetupMessage(queue);
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (!queue) return;
+                    // Mode: 0 = Off, 1 = Song, 2 = Queue
+                    const nextMode = (queue.repeatMode + 1) % 3;
+                    queue.setRepeatMode(nextMode);
+                    const modeName = nextMode === 0 ? 'Off' : nextMode === 1 ? 'Song' : 'Queue';
+                    await interaction.reply({ content: `🔁 Loop mode set to: **${modeName}**`, ephemeral: true });
+                    updateSetupMessage(queue);
+                }
                 break;
 
             case 'music_vol_down':
-                if (!queue) return;
-                const volDown = Math.max(0, queue.volume - 10);
-                queue.setVolume(volDown);
-                await interaction.reply({ content: `🔉 Volume decrease to ${volDown}%`, ephemeral: true });
-                updateSetupMessage(queue);
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (!queue) return;
+                    const volDown = Math.max(0, queue.volume - 10);
+                    queue.setVolume(volDown);
+                    await interaction.reply({ content: `🔉 Volume decrease to ${volDown}%`, ephemeral: true });
+                    updateSetupMessage(queue);
+                }
                 break;
 
             case 'music_vol_up':
-                if (!queue) return;
-                const volUp = Math.min(100, queue.volume + 10);
-                queue.setVolume(volUp);
-                await interaction.reply({ content: `🔊 Volume increased to ${volUp}%`, ephemeral: true });
-                updateSetupMessage(queue);
+                {
+                    const { checkDJPermission } = require('../utils/permissionUtils.js');
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+
+                    if (!queue) return;
+                    const volUp = Math.min(100, queue.volume + 10);
+                    queue.setVolume(volUp);
+                    await interaction.reply({ content: `🔊 Volume increased to ${volUp}%`, ephemeral: true });
+                    updateSetupMessage(queue);
+                }
                 break;
 
-            case 'music_lyrics':
-                // Trigger lyrics command logic manually or just say "Use /lyrics"
-                // For now, let's just guide them to the command as strictly requested, 
-                // or properly implement it. Let's redirect.
-                await interaction.reply({ content: '📜 Use `/lyrics` to view them properly!', ephemeral: true });
-                break;
+            // Lyrics handled above
+            /* case 'music_lyrics': */
 
             case 'music_queue':
                 if (!queue) return;

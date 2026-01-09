@@ -1,8 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder } from 'discord.js';
 import { distube } from '../client.js';
-import { Client } from 'genius-lyrics';
-
-const genius = new Client();
 
 export default {
     data: new SlashCommandBuilder()
@@ -27,26 +24,17 @@ export default {
         }
 
         try {
-            const searches = await genius.songs.search(query);
-            if (searches.length === 0) {
+            // Use shared utility
+            const { getSongLyrics, createLyricsEmbed } = require('../utils/lyricsUtils.js');
+            const result = await getSongLyrics(query);
+
+            if (!result) {
                 return interaction.editReply({ content: `❌ No lyrics found for **${query}**` });
             }
 
-            const song = searches[0];
-            const lyrics = await song.lyrics();
-
-            if (!lyrics) {
-                return interaction.editReply({ content: `❌ No lyrics text found for **${song.title}**` });
-            }
-
-            const embed = new EmbedBuilder()
-                .setColor('#F1C40F')
-                .setTitle(`Lyrics for ${song.title}`)
-                .setThumbnail(song.thumbnail)
-                .setDescription(lyrics.length > 4096 ? lyrics.substring(0, 4093) + '...' : lyrics)
-                .setFooter({ text: `Provided by Genius • ${song.artist.name}` });
-
+            const embed = createLyricsEmbed(result);
             await interaction.editReply({ embeds: [embed] });
+
         } catch (e) {
             console.error(e);
             await interaction.editReply({ content: `❌ Error fetching lyrics: ${e}` });

@@ -12,6 +12,12 @@ export default {
                 .setMinValue(0)
                 .setMaxValue(100)),
     async execute(interaction: any) {
+        // DJ Permission Check
+        const { checkDJPermission } = require('../utils/permissionUtils.js');
+        if (!checkDJPermission(interaction)) {
+            return interaction.reply({ content: '❌ You need the **DJ Role** to use this command!', ephemeral: true });
+        }
+
         const queue = distube.getQueue(interaction.guildId!);
         if (!queue) return interaction.reply({ content: '❌ No music playing!', ephemeral: true });
 

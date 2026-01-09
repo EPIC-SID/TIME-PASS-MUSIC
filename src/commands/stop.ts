@@ -12,6 +12,12 @@ export default {
             return interaction.reply({ content: 'You need to be in a voice channel!', ephemeral: true });
         }
 
+        // DJ Permission Check
+        const { checkDJPermission } = require('../utils/permissionUtils.js');
+        if (!checkDJPermission(interaction)) {
+            return interaction.reply({ content: '❌ You need the **DJ Role** to use this command!', ephemeral: true });
+        }
+
         const queue = distube.getQueue(interaction.guildId!);
         if (!queue) {
             return interaction.reply({ content: '❌ No music playing!', ephemeral: true });
