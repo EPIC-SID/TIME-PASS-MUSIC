@@ -1,4 +1,4 @@
-import { Events, Interaction } from 'discord.js';
+import { Events, Interaction, MessageFlags } from 'discord.js';
 import { client, distube } from '../client.js';
 import { updateSetupMessage, resetSetupMessage } from '../utils/musicUtils.js';
 
@@ -17,13 +17,13 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     } else {
         // Standard Music Control Checks
         if (!queue) {
-            return interaction.reply({ content: '❌ No music is currently playing!', ephemeral: true });
+            return interaction.reply({ content: '❌ No music is currently playing!', flags: MessageFlags.Ephemeral });
         }
 
         // Permission check: Ensure user is in the same voice channel
         const member = interaction.member as any;
         if (!member.voice.channel || member.voice.channel.id !== queue.voiceChannel?.id) {
-            return interaction.reply({ content: '❌ You need to be in the same voice channel as the bot!', ephemeral: true });
+            return interaction.reply({ content: '❌ You need to be in the same voice channel as the bot!', flags: MessageFlags.Ephemeral });
         }
     }
 
@@ -33,17 +33,17 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                 const filter = interaction.values[0];
                 if (filter === 'off') {
                     queue?.filters?.clear();
-                    await interaction.reply({ content: '✨ Cleared all filters.', ephemeral: true });
+                    await interaction.reply({ content: '✨ Cleared all filters.', flags: MessageFlags.Ephemeral });
                 } else {
                     // Toggle the filter or set it. DisTube's filter system is odd. 
                     // Usually queue.filters.add(filter) works if defined in config.
                     // We'll assume standard DisTube filters are available.
                     if (queue?.filters?.has(filter)) {
                         queue?.filters?.remove(filter);
-                        await interaction.reply({ content: `❌ Filter/Effect Removed: **${filter}**`, ephemeral: true });
+                        await interaction.reply({ content: `❌ Filter/Effect Removed: **${filter}**`, flags: MessageFlags.Ephemeral });
                     } else {
                         queue?.filters?.add(filter);
-                        await interaction.reply({ content: `✨ Filter/Effect Applied: **${filter}**`, ephemeral: true });
+                        await interaction.reply({ content: `✨ Filter/Effect Applied: **${filter}**`, flags: MessageFlags.Ephemeral });
                     }
                 }
             }
@@ -57,7 +57,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             await resetSetupMessage(interaction.guildId!);
             // Ephemeral confirmation - actually deferUpdate is often enough if we edit message
             // but here we might just want to reply confidentially
-            await interaction.followUp({ content: '🔄 Setup status refreshed!', ephemeral: true });
+            await interaction.followUp({ content: '🔄 Setup status refreshed!', flags: MessageFlags.Ephemeral });
             return;
         }
 
@@ -69,7 +69,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 - **Buttons**: Use the controls below the "Now Playing" message.
 - **Commands**: Type \`/\` to see all available commands like \`/filter\`, \`/loop\`, etc.
                  `,
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
             return;
         }
@@ -97,9 +97,9 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_lyrics':
                 // Shared Lyrics Logic
                 const currentSongForLyrics = queue?.songs[0];
-                if (!currentSongForLyrics) return interaction.reply({ content: '❌ No song playing!', ephemeral: true });
+                if (!currentSongForLyrics) return interaction.reply({ content: '❌ No song playing!', flags: MessageFlags.Ephemeral });
 
-                await interaction.deferReply({ ephemeral: true });
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
                 try {
                     const { getSongLyrics, createLyricsEmbed } = require('../utils/lyricsUtils.js');
                     const result = await getSongLyrics(currentSongForLyrics.name);
@@ -118,13 +118,13 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_back':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (queue && queue.previousSongs.length > 0) {
                         await queue.previous();
-                        await interaction.reply({ content: '⏮️ Went back to previous song!', ephemeral: true });
+                        await interaction.reply({ content: '⏮️ Went back to previous song!', flags: MessageFlags.Ephemeral });
                     } else {
-                        await interaction.reply({ content: '❌ No previous song found.', ephemeral: true });
+                        await interaction.reply({ content: '❌ No previous song found.', flags: MessageFlags.Ephemeral });
                     }
                 }
                 break;
@@ -132,13 +132,13 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_next':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (queue && queue.songs.length > 1) {
                         await queue.skip();
-                        await interaction.reply({ content: '⏭️ Skipped song!', ephemeral: true });
+                        await interaction.reply({ content: '⏭️ Skipped song!', flags: MessageFlags.Ephemeral });
                     } else {
-                        await interaction.reply({ content: '❌ No more songs in queue. Use Stop button to end.', ephemeral: true });
+                        await interaction.reply({ content: '❌ No more songs in queue. Use Stop button to end.', flags: MessageFlags.Ephemeral });
                     }
                 }
                 break;
@@ -146,14 +146,14 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_pause':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (queue?.paused) {
                         queue.resume();
-                        await interaction.reply({ content: '▶️ Resumed!', ephemeral: true });
+                        await interaction.reply({ content: '▶️ Resumed!', flags: MessageFlags.Ephemeral });
                     } else {
                         queue?.pause();
-                        await interaction.reply({ content: '⏸️ Paused!', ephemeral: true });
+                        await interaction.reply({ content: '⏸️ Paused!', flags: MessageFlags.Ephemeral });
                     }
                 }
                 break;
@@ -161,10 +161,10 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_stop':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     queue?.stop();
-                    await interaction.reply({ content: '🛑 Stopped music and cleared queue.', ephemeral: true });
+                    await interaction.reply({ content: '🛑 Stopped music and cleared queue.', flags: MessageFlags.Ephemeral });
                     resetSetupMessage(interaction.guildId!);
                 }
                 break;
@@ -172,24 +172,24 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_shuffle':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     queue?.shuffle();
-                    await interaction.reply({ content: '🔀 Shuffled queue!', ephemeral: true });
+                    await interaction.reply({ content: '🔀 Shuffled queue!', flags: MessageFlags.Ephemeral });
                 }
                 break;
 
             case 'music_loop':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (!queue) return;
                     // Mode: 0 = Off, 1 = Song, 2 = Queue
                     const nextMode = (queue.repeatMode + 1) % 3;
                     queue.setRepeatMode(nextMode);
                     const modeName = nextMode === 0 ? 'Off' : nextMode === 1 ? 'Song' : 'Queue';
-                    await interaction.reply({ content: `🔁 Loop mode set to: **${modeName}**`, ephemeral: true });
+                    await interaction.reply({ content: `🔁 Loop mode set to: **${modeName}**`, flags: MessageFlags.Ephemeral });
                     updateSetupMessage(queue);
                 }
                 break;
@@ -197,12 +197,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_vol_down':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (!queue) return;
                     const volDown = Math.max(0, queue.volume - 10);
                     queue.setVolume(volDown);
-                    await interaction.reply({ content: `🔉 Volume decrease to ${volDown}%`, ephemeral: true });
+                    await interaction.reply({ content: `🔉 Volume decrease to ${volDown}%`, flags: MessageFlags.Ephemeral });
                     updateSetupMessage(queue);
                 }
                 break;
@@ -210,12 +210,12 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             case 'music_vol_up':
                 {
                     const { checkDJPermission } = require('../utils/permissionUtils.js');
-                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', ephemeral: true });
+                    if (!checkDJPermission(interaction)) return interaction.reply({ content: '❌ You need the **DJ Role** to use this button!', flags: MessageFlags.Ephemeral });
 
                     if (!queue) return;
                     const volUp = Math.min(100, queue.volume + 10);
                     queue.setVolume(volUp);
-                    await interaction.reply({ content: `🔊 Volume increased to ${volUp}%`, ephemeral: true });
+                    await interaction.reply({ content: `🔊 Volume increased to ${volUp}%`, flags: MessageFlags.Ephemeral });
                     updateSetupMessage(queue);
                 }
                 break;
@@ -236,7 +236,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                         description: qDocs || 'No songs in queue.',
                         footer: { text: `Total Songs: ${queue.songs.length} | Total Duration: ${queue.formattedDuration}` }
                     }],
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
                 break;
 
@@ -257,14 +257,14 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
                             { name: 'Source', value: currentSong?.source || 'Unknown', inline: true }
                         ]
                     }],
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
                 break;
         }
     } catch (error) {
         console.error('Interaction Handler Error:', error);
         if (!interaction.replied) {
-            await interaction.reply({ content: '❌ An error occurred processing that button.', ephemeral: true });
+            await interaction.reply({ content: '❌ An error occurred processing that button.', flags: MessageFlags.Ephemeral });
         }
     }
 });
