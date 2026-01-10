@@ -59,24 +59,66 @@ const json = (url: string, flags: any) => {
     });
 };
 
+const convertCookiesToNetscape = (cookies: any[]): string => {
+    let output = '# Netscape HTTP Cookie File\n';
+    if (!Array.isArray(cookies)) return '';
+
+    for (const cookie of cookies) {
+        if (!cookie.domain || !cookie.name || cookie.value === undefined) continue;
+
+        const domain = cookie.domain;
+        const flag = domain.startsWith('.') ? 'TRUE' : 'FALSE';
+        const path = cookie.path || '/';
+        const secure = cookie.secure ? 'TRUE' : 'FALSE';
+        const expiration = cookie.expirationDate ? Math.round(cookie.expirationDate) : 0;
+        const name = cookie.name;
+        const value = cookie.value;
+
+        output += `${domain}\t${flag}\t${path}\t${secure}\t${expiration}\t${name}\t${value}\n`;
+    }
+    return output;
+};
+
 export class YtDlpPlugin extends PlayableExtractorPlugin {
+    private cookiePath: string | undefined;
+
     constructor(options?: any) {
         super();
         download().catch(console.error);
+
+        // Handle Cookies
+        if (options?.cookies && Array.isArray(options.cookies)) {
+            try {
+                const netscapeCookies = convertCookiesToNetscape(options.cookies);
+                if (netscapeCookies) {
+                    this.cookiePath = path.join(process.cwd(), 'cookies.txt');
+                    fs.writeFileSync(this.cookiePath, netscapeCookies);
+                    console.log('[YtDlpPlugin] Converted JSON cookies to cookies.txt');
+                }
+            } catch (e) {
+                console.error('[YtDlpPlugin] Failed to convert cookies:', e);
+            }
+        }
     }
 
     validate() { return true; }
 
     async resolve<T>(url: string, options: any): Promise<Song<T> | Playlist<T>> {
         // REMOVED: noCallHome: true
-        const info = await json(url, {
+        const flags: any = {
             dumpSingleJson: true,
             noWarnings: true,
             preferFreeFormats: true,
             skipDownload: true,
             simulate: true,
             ...options?.ytdlOptions
-        }).catch((e: any) => {
+        };
+
+        if (this.cookiePath) {
+            flags.cookies = this.cookiePath;
+        }
+
+        const info = await json(url, flags).catch((e: any) => {
             throw new DisTubeError('YTDLP_ERROR', `${e.message || e}`);
         });
 
@@ -96,15 +138,22 @@ export class YtDlpPlugin extends PlayableExtractorPlugin {
         if (!song.url) {
             throw new DisTubeError('YTDLP_PLUGIN_INVALID_SONG', 'Cannot get stream url from invalid song.');
         }
-        // REMOVED: noCallHome: true
-        const info = await json(song.url, {
+
+        const flags: any = {
             dumpSingleJson: true,
             noWarnings: true,
             preferFreeFormats: true,
             skipDownload: true,
             simulate: true,
             format: 'ba/ba*'
-        }).catch((e: any) => {
+        };
+
+        if (this.cookiePath) {
+            flags.cookies = this.cookiePath;
+        }
+
+        // REMOVED: noCallHome: true
+        const info = await json(song.url, flags).catch((e: any) => {
             throw new DisTubeError('YTDLP_ERROR', `${e.message || e}`);
         });
         return info.url as string;
