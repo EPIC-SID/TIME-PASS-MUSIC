@@ -47,8 +47,6 @@ const json = (url: string, flags: any) => {
                 try {
                     resolve(JSON.parse(output));
                 } catch (e) {
-                    // Sometimes yt-dlp outputs JSON lines, try parsing the first one or the whole thing?
-                    // The original plugin does: output.toString().substring(output.toString().indexOf("{"))
                     const jsonPart = output.substring(output.indexOf('{'));
                     resolve(JSON.parse(jsonPart));
                 }
@@ -78,6 +76,34 @@ const convertCookiesToNetscape = (cookies: any[]): string => {
     }
     return output;
 };
+
+class YtDlpSong extends Song {
+    constructor(plugin: YtDlpPlugin, info: any, options: any = {}) {
+        super(
+            {
+                plugin,
+                source: info.extractor,
+                playFromSource: true,
+                id: info.id,
+                name: info.title || info.fulltitle,
+                url: info.webpage_url || info.original_url,
+                isLive: info.is_live,
+                thumbnail: info.thumbnail || info.thumbnails?.[0]?.url,
+                duration: info.is_live ? 0 : info.duration,
+                uploader: {
+                    name: info.uploader,
+                    url: info.uploader_url
+                },
+                views: info.view_count,
+                likes: info.like_count,
+                dislikes: info.dislike_count,
+                reposts: info.repost_count,
+                ageRestricted: Boolean(info.age_limit) && info.age_limit >= 18
+            } as any,
+            options
+        );
+    }
+}
 
 export class YtDlpPlugin extends PlayableExtractorPlugin {
     private cookiePath: string | undefined;
@@ -125,13 +151,13 @@ export class YtDlpPlugin extends PlayableExtractorPlugin {
         if (Array.isArray(info.entries)) { // Playlist
             return new Playlist({
                 source: 'youtube',
-                songs: info.entries.map((i: any) => new Song(i, { member: options.member, source: 'youtube', metadata: i } as any)),
+                songs: info.entries.map((i: any) => new YtDlpSong(this, i, options)),
                 name: info.title,
                 url: info.webpage_url,
                 thumbnail: info.thumbnails?.[0]?.url
             }, options) as Playlist<T>;
         }
-        return new Song(info, { member: options.member, source: 'youtube', metadata: info } as any) as Song<T>;
+        return new YtDlpSong(this, info, options) as unknown as Song<T>;
     }
 
     async getStreamURL(song: Song) {
