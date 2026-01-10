@@ -176,8 +176,8 @@ ${progressBar} \`[0:00 / ${song.formattedDuration}]\`
         // Init queue
     })
     .on('debug', (message: string) => {
-        // Debug
+        // console.log('[DisTube Debug]', message); // Optional: Enable if needed
     })
     .on('ffmpegDebug', (text: string) => {
-        // FFmpeg Debug
+        console.log('[FFmpeg Debug]', text);
     });

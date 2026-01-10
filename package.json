@@ -27,6 +27,7 @@
     "@distube/spotify": "^2.0.2",
     "@distube/yt-dlp": "^2.0.1",
     "@snazzah/davey": "^0.1.9",
+    "dargs": "^8.1.0",
     "discord.js": "^14.25.1",
     "distube": "^5.2.3",
     "dotenv": "^17.2.3",
@@ -35,6 +36,7 @@
     "libsodium-wrappers": "^0.7.16",
     "opusscript": "^0.1.1",
     "sodium-native": "^5.0.10",
+    "undici": "^7.18.2",
     "yt-search": "^2.13.1"
   },
   "devDependencies": {
